@@ -9,6 +9,7 @@ import SuggestedQuestions from "./SuggestedQuestions";
 import TypingIndicator from "./TypingIndicator";
 import EmptyState from "./EmptyState";
 import useChatScroll from "@/hooks/useChatScroll";
+import LoadingSkeleton from "./LoadingSkeleton";
 
 import type { ChatMessage as ChatMessageType } from "@/types/chat";
 
@@ -95,14 +96,7 @@ export default function ChatWindow({
 
                 {/* Messages */}
 
-                <div
-                    ref={chatRef}
-                    className="
-        flex-1
-        overflow-y-auto
-        px-4
-        py-5
-    "
+                <div ref={chatRef} className=" flex-1 overflow-y-auto px-4 py-5"
                 >
                     {messages.length === 0 ? (
                         <EmptyState
@@ -120,7 +114,13 @@ export default function ChatWindow({
                             ))}
 
                             {loading && (
-                                <TypingIndicator />
+                                <>
+                                    <TypingIndicator />
+
+                                    <div className="mt-4">
+                                        <LoadingSkeleton />
+                                    </div>
+                                </>
                             )}
 
                         </div>
@@ -155,11 +155,6 @@ export default function ChatWindow({
                         🔄 Regenerate Last Response
                     </button>
                 </div>
-
-                {/* <ChatInput
-                    loading={loading}
-                    onSend={onSend}
-                /> */}
             </motion.div>
         </AnimatePresence>
     );
