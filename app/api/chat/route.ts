@@ -1,5 +1,9 @@
 import { NextRequest } from "next/server";
 import { generatePortfolioResponse } from "@/lib/chat";
+import {
+    createErrorResponse,
+    validateString,
+} from "@/lib/errors";
 
 export const runtime = "nodejs";
 
@@ -7,22 +11,15 @@ export async function POST(
     request: NextRequest
 ) {
     try {
-        const {
-            message,
-            history = [],
-        } = await request.json();
+        const body = await request.json();
 
-        if (!message?.trim()) {
-            return Response.json(
-                {
-                    error:
-                        "Message is required",
-                },
-                {
-                    status: 400,
-                }
-            );
-        }
+        const message = validateString(
+            body.message,
+            "Message"
+        );
+
+        const history =
+            body.history ?? [];
 
         const result =
             await generatePortfolioResponse(
@@ -38,14 +35,6 @@ export async function POST(
     } catch (error) {
         console.error(error);
 
-        return Response.json(
-            {
-                error:
-                    "Something went wrong.",
-            },
-            {
-                status: 500,
-            }
-        );
+        return createErrorResponse(error);
     }
 }
