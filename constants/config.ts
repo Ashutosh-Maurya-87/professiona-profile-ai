@@ -41,13 +41,9 @@ export const CHAT_CONFIG = {
 
 export const AI_MODEL_CONFIG = {
     provider: "groq",
-
-    model: "llama-3.3-70b-versatile",
-
     temperature: 0.4,
-
     maxTokens: 2048,
-};
+} as const;
 
 export const FEATURE_FLAGS = {
     enableAI: true,
