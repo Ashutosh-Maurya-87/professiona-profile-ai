@@ -53,7 +53,7 @@ export default function ChatHeader({
                 <div>
 
                     <h2 className="font-semibold text-white">
-                        Ash AI Assistant
+                        Hi, I am Ashu's AI Assistant
                     </h2>
 
                     <p className="text-sm text-green-400">

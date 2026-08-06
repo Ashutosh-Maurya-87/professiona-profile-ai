@@ -65,7 +65,7 @@ export default function ChatWindow({
           right-8
           z-9998
           flex
-          h-175
+          h-150
           w-105
           flex-col
           overflow-hidden
