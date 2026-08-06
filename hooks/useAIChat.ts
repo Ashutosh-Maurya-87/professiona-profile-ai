@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { ChatMessage } from "@/types/chat";
 
 const STORAGE_KEY = "portfolio-ai-chat";
@@ -48,10 +47,7 @@ export default function useAIChat() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(messages)
-        );
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     }, [messages]);
 
     async function sendMessage(message: string) {
