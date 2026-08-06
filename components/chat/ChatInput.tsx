@@ -6,35 +6,85 @@ import { SendHorizonal } from "lucide-react";
 
 interface ChatInputProps {
     loading: boolean;
-    onSend: (message: string) => Promise<void>;
+
+    rateLimited: boolean;
+
+    retryAfter: number;
+
+    onSend: (
+        message: string
+    ) => Promise<void>;
 }
 
 export default function ChatInput({
     loading,
+    rateLimited,
+    retryAfter,
     onSend,
 }: ChatInputProps) {
-    const [message, setMessage] = useState("");
+    const [message, setMessage] =
+        useState("");
 
     const textareaRef =
         useRef<HTMLTextAreaElement>(null);
 
-    async function handleSend() {
-        const value = message.trim();
+    function formatTime(
+        seconds: number
+    ) {
+        const hours = Math.floor(
+            seconds / 3600
+        );
 
-        if (!value || loading) return;
+        const minutes = Math.floor(
+            (seconds % 3600) / 60
+        );
+
+        const secs =
+            seconds % 60;
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        }
+
+        if (minutes > 0) {
+            return `${minutes}m ${secs}s`;
+        }
+
+        return `${secs}s`;
+    }
+
+    async function handleSend() {
+        const value =
+            message.trim();
+
+        if (
+            !value ||
+            loading ||
+            rateLimited
+        ) {
+            return;
+        }
 
         await onSend(value);
 
         setMessage("");
 
         if (textareaRef.current) {
-            textareaRef.current.style.height = "48px";
+            textareaRef.current.style.height =
+                "48px";
         }
     }
 
     function handleKeyDown(
         e: KeyboardEvent<HTMLTextAreaElement>
     ) {
+        if (
+            loading ||
+            rateLimited
+        ) {
+            return;
+        }
+
         if (
             e.key === "Enter" &&
             !e.shiftKey
@@ -50,7 +100,8 @@ export default function ChatInput({
     ) {
         setMessage(value);
 
-        if (!textareaRef.current) return;
+        if (!textareaRef.current)
+            return;
 
         textareaRef.current.style.height =
             "48px";
@@ -62,88 +113,132 @@ export default function ChatInput({
     return (
         <div
             className="
-        border-t
-        border-zinc-700
-        bg-[#17181c]
-        p-4
-      "
+                border-t
+                border-zinc-700
+                bg-[#17181c]
+                p-4
+            "
         >
             <div
-                className="
-          flex
-          items-end
-          gap-3
-          rounded-2xl
-          border
-          border-zinc-700
-          bg-zinc-900
-          p-3
-        "
+                className={`
+                    flex
+                    items-end
+                    gap-3
+                    rounded-2xl
+                    border
+                    p-3
+                    transition
+
+                    ${rateLimited
+                        ? "border-red-600 bg-red-950/20"
+                        : "border-zinc-700 bg-zinc-900"
+                    }
+                `}
             >
                 <textarea
                     ref={textareaRef}
                     rows={1}
                     value={message}
-                    disabled={loading}
+                    disabled={
+                        loading ||
+                        rateLimited
+                    }
                     maxLength={1000}
-                    placeholder="Ask anything about Ashutosh..."
-                    onKeyDown={handleKeyDown}
+                    placeholder={
+                        rateLimited
+                            ? `AI limit reached • Retry in ${formatTime(
+                                retryAfter
+                            )}`
+                            : "Ask anything about Ashutosh..."
+                    }
+                    onKeyDown={
+                        handleKeyDown
+                    }
                     onChange={(e) =>
-                        handleChange(e.target.value)
+                        handleChange(
+                            e.target.value
+                        )
                     }
                     className="
-            max-h-40
-            flex-1
-            resize-none
-            overflow-y-auto
-            bg-transparent
-            text-sm
-            text-white
-            outline-none
-            placeholder:text-zinc-500
-          "
+                        max-h-40
+                        flex-1
+                        resize-none
+                        overflow-y-auto
+                        bg-transparent
+                        text-sm
+                        text-white
+                        outline-none
+                        placeholder:text-zinc-500
+                        disabled:cursor-not-allowed
+                        disabled:opacity-60
+                    "
                 />
 
                 <button
-                    onClick={handleSend}
+                    onClick={
+                        handleSend
+                    }
                     disabled={
-                        loading || !message.trim()
+                        loading ||
+                        rateLimited ||
+                        !message.trim()
                     }
                     className="
-            flex
-            h-11
-            w-11
-            items-center
-            justify-center
-            rounded-full
-            bg-amber-500
-            text-white
-            transition
-            hover:bg-amber-400
-            disabled:cursor-not-allowed
-            disabled:opacity-50
-          "
+                        flex
+                        h-11
+                        w-11
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-amber-500
+                        text-white
+                        transition
+                        hover:bg-amber-400
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
+                    "
                 >
-                    <SendHorizonal size={18} />
+                    <SendHorizonal
+                        size={18}
+                    />
                 </button>
             </div>
 
             <div
                 className="
-          mt-2
-          flex
-          justify-between
-          text-xs
-          text-zinc-500
-        "
+                    mt-2
+                    flex
+                    justify-between
+                    text-xs
+                "
             >
-                <span>
-                    Press Enter to send
-                </span>
+                {rateLimited ? (
+                    <>
+                        <span className="text-red-400">
+                            AI limit reached
+                        </span>
 
-                <span>
-                    {message.length}/1000
-                </span>
+                        <span className="font-medium text-red-400">
+                            {formatTime(
+                                retryAfter
+                            )}
+                        </span>
+                    </>
+                ) : (
+                    <>
+                        <span className="text-zinc-500">
+                            Press Enter to
+                            send
+                        </span>
+
+                        <span className="text-zinc-500">
+                            {
+                                message.length
+                            }
+                            /1000
+                        </span>
+                    </>
+                )}
             </div>
         </div>
     );

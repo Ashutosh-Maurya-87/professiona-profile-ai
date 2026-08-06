@@ -15,6 +15,8 @@ export default function AIChat() {
         loading,
         sendMessage,
         clearChat,
+        rateLimited,
+        retryAfter,
     } = useAIChat();
 
     const { regenerate } =
@@ -42,14 +44,9 @@ export default function AIChat() {
                     onClose={() => setIsOpen(false)}
                     onClear={clearChat}
                     onRegenerate={regenerate}
+                    rateLimited={rateLimited}
+                    retryAfter={retryAfter}
                 />
-                // <ChatWindow
-                //     messages={messages}
-                //     loading={loading}
-                //     onSend={sendMessage}
-                //     onClose={() => setIsOpen(false)}
-                //     onClear={clearChat}
-                // />
             )}
         </>
     );

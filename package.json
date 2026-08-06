@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.55",
+    "@upstash/redis": "^1.38.2",
     "ai": "^6.0.242",
     "clsx": "^2.1.1",
     "framer-motion": "^12.43.0",

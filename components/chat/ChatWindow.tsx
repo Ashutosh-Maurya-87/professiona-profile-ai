@@ -20,6 +20,8 @@ interface ChatWindowProps {
     onClose: () => void;
     onClear: () => void;
     onRegenerate: () => Promise<void>;
+    rateLimited: boolean;
+    retryAfter: number;
 }
 
 export default function ChatWindow({
@@ -29,6 +31,8 @@ export default function ChatWindow({
     onClose,
     onClear,
     onRegenerate,
+    rateLimited,
+    retryAfter
 }: ChatWindowProps) {
     const chatRef = useChatScroll({
         dependency: messages,
@@ -132,6 +136,8 @@ export default function ChatWindow({
                 <ChatInput
                     loading={loading}
                     onSend={onSend}
+                    rateLimited={rateLimited}
+                    retryAfter={retryAfter}
                 />
                 <div className="border-t border-zinc-800 p-3">
                     <button

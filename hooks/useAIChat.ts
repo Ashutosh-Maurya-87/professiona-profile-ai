@@ -45,13 +45,45 @@ export default function useAIChat() {
     });
 
     const [loading, setLoading] = useState(false);
+    const [rateLimited, setRateLimited] =
+        useState(false);
+
+    const [retryAfter, setRetryAfter] = useState(0);
 
     useEffect(() => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     }, [messages]);
 
+    useEffect(() => {
+        if (!rateLimited || retryAfter <= 0) {
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setRetryAfter((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+
+                    setRateLimited(false);
+
+                    return 0;
+                }
+
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [rateLimited, retryAfter]);
+
     async function sendMessage(message: string) {
-        if (!message.trim() || loading) return;
+        if (
+            !message.trim() ||
+            loading ||
+            rateLimited
+        ) {
+            return;
+        }
 
         const userMessage: ChatMessage = {
             id: crypto.randomUUID(),
@@ -95,6 +127,43 @@ export default function useAIChat() {
                         })),
                 }),
             });
+
+            // -----------------------------
+            // Rate Limit
+            // -----------------------------
+
+            if (response.status === 429) {
+                const json = await response.json();
+
+                setRateLimited(true);
+
+                setRetryAfter(json.retryAfter ?? 0);
+
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        id: crypto.randomUUID(),
+
+                        role: "assistant",
+
+                        content: `AI usage limit reached.
+
+You have used all ${json.limit} requests.
+
+Please try again in ${formatDuration(
+                            json.retryAfter ?? 0
+                        )}.`,
+
+                        createdAt: new Date(),
+
+                        type: "error",
+
+                        error: true,
+                    },
+                ]);
+
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(
@@ -206,7 +275,9 @@ export default function useAIChat() {
             }
         } catch (error) {
             console.error(error);
-
+            if (rateLimited) {
+                return;
+            }
             setMessages((prev) => [
                 ...prev,
                 {
@@ -235,7 +306,23 @@ export default function useAIChat() {
         // setMessages([createInitialMessage()]);
         setMessages([]);
     }
+    function formatDuration(
+        seconds: number
+    ) {
+        const hours = Math.floor(
+            seconds / 3600
+        );
 
+        const minutes = Math.floor(
+            (seconds % 3600) / 60
+        );
+
+        if (hours > 0) {
+            return `${hours} hour${hours > 1 ? "s" : ""} ${minutes} minute${minutes !== 1 ? "s" : ""}`;
+        }
+
+        return `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+    }
     return {
         messages,
 
@@ -244,5 +331,9 @@ export default function useAIChat() {
         sendMessage,
 
         clearChat,
+
+        rateLimited,
+
+        retryAfter,
     };
 }
