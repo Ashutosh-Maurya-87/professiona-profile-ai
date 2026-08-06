@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, KeyboardEvent } from "react";
+import { KeyboardEvent, useRef, useState } from "react";
 
 import { SendHorizonal } from "lucide-react";
 

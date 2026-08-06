@@ -1,17 +1,16 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
 import {
     AlertCircle,
     Bot,
     Download,
-    FolderKanban,
     Mail,
     Phone,
-    User,
+    User
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
 
 import type { ChatMessage as ChatMessageType } from "@/types/chat";
 
@@ -23,10 +22,10 @@ import type {
     Resume,
     SkillCategory,
 } from "@/types/portfolio";
+import EducationCard from "./cards/EducationCard";
+import ExperienceCard from "./cards/ExperienceCard";
 import ProjectCard from "./cards/ProjectCard";
 import SkillsCard from "./cards/SkillsCard";
-import ExperienceCard from "./cards/ExperienceCard";
-import EducationCard from "./cards/EducationCard";
 // import CopyMessageButton from "./CopyMessageButton";
 import MessageActions from "./MessageActions";
 interface ChatMessageProps {
@@ -274,8 +273,8 @@ export default function ChatMessage({
 
                         <span
                             className={`text-xs ${isUser
-                                    ? "text-amber-100"
-                                    : "text-zinc-500"
+                                ? "text-amber-100"
+                                : "text-zinc-500"
                                 }`}
                         >
                             {new Date(
