@@ -35,8 +35,8 @@
 
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  /* margin: 0; */
+  /* padding: 0; */
 }
 
 html {
@@ -849,12 +849,3 @@ a:focus-visible,
   outline: 2px solid var(--color-phosphor-mint);
   outline-offset: 2px;
 }
-
-
-/* html {
-  scroll-behavior: smooth;
-}
-
-body {
-  overflow-x: hidden;
-} */
