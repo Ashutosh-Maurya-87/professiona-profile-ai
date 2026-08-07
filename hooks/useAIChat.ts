@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChatMessage } from "@/types/chat";
+import { getBrowserFingerprint } from "@/lib/fingerprint";
 
 const STORAGE_KEY = "portfolio-ai-chat";
 
@@ -43,16 +44,35 @@ export default function useAIChat() {
             return [createInitialMessage()];
         }
     });
-
+    // const [retryAfter, setRetryAfter] = useState(0);
     const [loading, setLoading] = useState(false);
     const [rateLimited, setRateLimited] =
         useState(false);
 
     const [retryAfter, setRetryAfter] = useState(0);
+    const [deviceId, setDeviceId] = useState("");
 
     useEffect(() => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     }, [messages]);
+
+    useEffect(() => {
+        async function loadFingerprint() {
+            try {
+                const id =
+                    await getBrowserFingerprint();
+
+                setDeviceId(id);
+            } catch (error) {
+                console.error(
+                    "Failed to load browser fingerprint",
+                    error
+                );
+            }
+        }
+
+        loadFingerprint();
+    }, []);
 
     useEffect(() => {
         if (!rateLimited || retryAfter <= 0) {
@@ -77,11 +97,7 @@ export default function useAIChat() {
     }, [rateLimited, retryAfter]);
 
     async function sendMessage(message: string) {
-        if (
-            !message.trim() ||
-            loading ||
-            rateLimited
-        ) {
+        if (!deviceId || !message.trim() || loading || rateLimited) {
             return;
         }
 
@@ -109,6 +125,7 @@ export default function useAIChat() {
 
                 headers: {
                     "Content-Type": "application/json",
+                    "x-device-id": deviceId,
                 },
 
                 body: JSON.stringify({

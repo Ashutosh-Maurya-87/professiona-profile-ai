@@ -1,4 +1,7 @@
-import { cookies, headers } from "next/headers";
+import crypto from "crypto";
+
+import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
 
 import { RATE_LIMIT } from "@/constants/rate-limit";
 
@@ -14,73 +17,99 @@ export interface VisitorIdentifier {
 }
 
 /**
- * Generates a UUID for a new visitor.
+ * Generates a UUID cookie.
+ *
+ * The cookie is NOT used as the
+ * primary identity anymore.
  */
 function generateVisitorId() {
     return crypto.randomUUID();
 }
 
 /**
- * Returns the client's IP.
- * Used only as a fallback.
+ * Creates a SHA256 hash.
  */
-async function getClientIp() {
-    const headerList = await headers();
-
-    return (
-        headerList
-            .get("x-forwarded-for")
-            ?.split(",")[0]
-            .trim() ||
-        headerList.get("x-real-ip") ||
-        "unknown"
-    );
+function sha256(value: string) {
+    return crypto
+        .createHash("sha256")
+        .update(value)
+        .digest("hex");
 }
 
 /**
  * Returns a stable visitor identifier.
  *
- * Priority
- * ----------
- * 1. Existing Cookie
- * 2. Generate Cookie
- * 3. IP Fallback
+ * Priority:
  *
- * NOTE:
- * This function DOES NOT write cookies.
- * Route handlers should write cookies.
+ * 1. Browser Fingerprint
+ * 2. IP + UserAgent fallback
+ *
+ * Cookie is only used to keep
+ * a stable browser session.
  */
-export async function getVisitorIdentifier(): Promise<VisitorIdentifier> {
-    const cookieStore = await cookies();
+export async function getVisitorIdentifier(
+    request: NextRequest
+): Promise<VisitorIdentifier> {
+    const cookieStore =
+        await cookies();
 
-    const existing =
-        cookieStore.get(VISITOR_COOKIE);
+    let cookie =
+        cookieStore.get(
+            VISITOR_COOKIE
+        )?.value;
 
-    if (existing?.value) {
-        return {
-            identifier: existing.value,
+    let shouldSetCookie =
+        false;
 
-            shouldSetCookie: false,
-        };
-    }
-
-    try {
-        const visitorId =
+    if (!cookie) {
+        cookie =
             generateVisitorId();
 
-        return {
-            identifier: visitorId,
-
-            shouldSetCookie: true,
-
-            cookieValue: visitorId,
-        };
-    } catch {
-        return {
-            identifier:
-                await getClientIp(),
-
-            shouldSetCookie: false,
-        };
+        shouldSetCookie =
+            true;
     }
+
+    // --------------------------
+    // Browser Fingerprint
+    // --------------------------
+
+    const fingerprint =
+        request.headers.get(
+            "x-device-id"
+        );
+
+    // --------------------------
+    // Fallback
+    // --------------------------
+
+    const ip =
+        request.headers
+            .get("x-forwarded-for")
+            ?.split(",")[0]
+            .trim() ||
+
+        request.headers.get(
+            "x-real-ip"
+        ) ||
+
+        "";
+
+    const userAgent =
+        request.headers.get(
+            "user-agent"
+        ) ?? "";
+
+    const identifier = fingerprint
+        ? sha256(fingerprint)
+        : sha256(
+              `${ip}:${userAgent}`
+          );
+
+    return {
+        identifier,
+
+        shouldSetCookie,
+
+        cookieValue: cookie,
+    };
 }

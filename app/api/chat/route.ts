@@ -35,8 +35,7 @@ export async function POST(
         // Visitor
         // -------------------------
 
-        const visitor =
-            await getVisitorIdentifier();
+        const visitor = await getVisitorIdentifier(request);
 
         // -------------------------
         // Rate Limit
