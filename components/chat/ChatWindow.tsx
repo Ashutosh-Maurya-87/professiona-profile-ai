@@ -61,42 +61,16 @@ export default function ChatWindow({
                 transition={{
                     duration: 0.25,
                 }}
-                className="fixed bottom-28
-          right-8
-          z-9998
-          flex
-          h-150
-          w-105
-          flex-col
-          overflow-hidden
-          rounded-3xl
-          border
-          border-zinc-700
-          bg-[#17181c]
-          shadow-[0_25px_80px_rgba(0,0,0,0.5)]
-          backdrop-blur-xl
-
-          max-md:bottom-0
-          max-md:right-0
-          max-md:h-screen
-          max-md:w-screen
-          max-md:rounded-none
-        "
+                className="fixed bottom-28 right-8 z-9998 flex h-150 w-105 flex-col overflow-hidden rounded-3xl
+                           border border-zinc-700 bg-[#17181c] shadow-[0_25px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl
+                           max-md:bottom-0 max-md:right-0 max-md:h-screen max-md:w-screen max-md:rounded-none"
             >
-                {/* Header */}
 
-                <ChatHeader
-                    onClose={onClose}
-                    onClear={onClear}
-                />
+                <ChatHeader onClose={onClose} onClear={onClear} />
 
                 {/* Suggestions */}
 
-                {showSuggestions && (
-                    <SuggestedQuestions
-                        onSelect={onSend}
-                    />
-                )}
+                {showSuggestions && (<SuggestedQuestions onSelect={onSend} />)}
 
                 {/* Messages */}
 
@@ -120,7 +94,6 @@ export default function ChatWindow({
                             {loading && (
                                 <>
                                     <TypingIndicator />
-
                                     <div className="mt-4">
                                         <LoadingSkeleton />
                                     </div>
@@ -144,18 +117,18 @@ export default function ChatWindow({
                         onClick={onRegenerate}
                         disabled={loading}
                         className="
-            w-full
-            rounded-xl
-            border
-            border-zinc-700
-            py-2
-            text-sm
-            font-medium
-            text-zinc-300
-            transition
-            hover:border-amber-500
-            hover:text-amber-400
-            disabled:opacity-50
+                                 w-full
+                                 rounded-xl
+                                 border
+                                 border-zinc-700
+                                  py-2
+                                  text-sm
+                                  font-medium
+                                  text-zinc-300
+                                  transition
+                                  hover:border-amber-500
+                                  hover:text-amber-400
+                                  disabled:opacity-50
         "
                     >
                         🔄 Regenerate Last Response

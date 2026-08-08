@@ -19,11 +19,7 @@ export default function AIChat() {
         retryAfter,
     } = useAIChat();
 
-    const { regenerate } =
-        useRegenerate({
-            messages,
-            sendMessage,
-        });
+    const { regenerate } = useRegenerate({ messages, sendMessage, });
 
     function toggleChat() {
         setIsOpen((prev) => !prev);
